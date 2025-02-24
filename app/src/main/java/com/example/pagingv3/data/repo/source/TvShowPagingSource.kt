@@ -6,6 +6,7 @@ import com.example.pagingv3.data.model.TvShow
 import com.example.pagingv3.data.model.TvShowResponse
 import com.example.pagingv3.data.repo.network.ITvShowServer
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.withContext
 
 class TvShowPagingSource(
@@ -22,12 +23,14 @@ class TvShowPagingSource(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TvShow> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 println("currentKey = ${params.key}")
                 val nextPage = params.key ?: 1
                 val response = iServer.getTvShowResponse(nextPage).execute()
                 if (response.isSuccessful && response.body() != null) {
                     val data = response.body()!!.tvShows
+
+                    kotlinx.coroutines.delay(3000)
                     LoadResult.Page(
                         data = data!!,
                         prevKey = null,

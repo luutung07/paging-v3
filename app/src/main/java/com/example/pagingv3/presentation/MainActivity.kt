@@ -6,9 +6,11 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pagingv3.R
 import com.example.pagingv3.databinding.ActivityMainBinding
@@ -21,6 +23,9 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<MainViewModel> ()
     private val adapter = TvShowAdapter()
+    val pagingAdapter = MyLoadStateAdapter({
+        adapter.retry()
+    })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +50,17 @@ class MainActivity : AppCompatActivity() {
         adapter.listener = object : TvShowAdapter.ITvShowCallBack{
             override fun onSelect(id: Int) {
                 viewModel.addFavourite(id)
+            }
+        }
+
+        binding.rvMain.adapter = adapter.withLoadStateFooter(
+            footer = pagingAdapter
+        )
+
+        lifecycleScope.launch {
+            adapter.loadStateFlow.collectLatest {
+                println("state paging = ${it.append}")
+
             }
         }
 
